@@ -59,7 +59,6 @@ export function generateQueryInsertUser(roleName: string, bussArea: string, isWi
 
 export function generateQueryAssignRole(roleName: string, bussArea: string): string {
 	const userName = generateUserName(roleName, bussArea)
-	const name = `${roleName.replaceAll('-', ' ')} ${bussArea}`.toUpperCase()
 
 	return `INSERT INTO "ROLE_USER" ("USER_ID", "ROLE_ID") VALUES ((SELECT MAX(ID) FROM "USERS" WHERE "USERNAME" = '${userName}'), (SELECT MAX(ID) FROM "ROLES" WHERE "NAME" = '${roleName}'));`
 }
