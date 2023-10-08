@@ -15,7 +15,8 @@ type UserCreatorForm = {
   bussAreaLv1: string,
   bussAreaLv2: string,
   isWithDbId: boolean,
-  selectedRoles: string[]
+  selectedRoles: string[],
+  hashedPassword: string
 }
 
 const roleList: string[] = Array.from(MASTER_ROLES.keys())
@@ -26,7 +27,8 @@ export default function UserCreator() {
       bussAreaLv1: '',
       bussAreaLv2: '',
       isWithDbId: false,
-      selectedRoles: [...roleList]
+      selectedRoles: [...roleList],
+      hashedPassword: process.env.NEXT_PUBLIC_USER_CREATOR_DEFAULT_PASSWORD ?? ''
     },
     validate: {
       bussAreaLv1: isNotEmpty('Tidak boleh kosong!'),
@@ -58,7 +60,7 @@ export default function UserCreator() {
       if (role) {
         const bussArea = role.level === '2' ? form.values.bussAreaLv2 : form.values.bussAreaLv1;
 
-        finalUserInsert.push(generateQueryInsertUser(role.name, bussArea, form.values.isWithDbId))
+        finalUserInsert.push(generateQueryInsertUser(role.name, bussArea, form.values.hashedPassword, form.values.isWithDbId))
         finalAssignRole.push(generateQueryAssignRole(role.name, bussArea))
         finalAssignBussArea.push(generateQueryAssignBussArea(role.name, bussArea, form.values.isWithDbId))
 
@@ -98,6 +100,9 @@ export default function UserCreator() {
                 hidePickedOptions
                 description={`${form.values.selectedRoles.length} terpilih dari ${roleList.length}`}
               />
+            </Grid.Col>
+            <Grid.Col>
+              <TextInput label="Hashed Password" withAsterisk {...form.getInputProps('hashedPassword')} maw="300px" />
             </Grid.Col>
             <Grid.Col>
               <Checkbox

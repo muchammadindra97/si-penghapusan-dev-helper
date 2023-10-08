@@ -10,12 +10,13 @@ describe('User Creator Service Test', () => {
 	test('Generate insert query', () => {
 		const role = 'creator-lv2'
 		const bussArea = '5611'
+		const hashedPassword: string = '$2y$10$9PCJ.5bX0RHt1Zq7gFiswOcigO1kvwXRP5V.xgG3rpSVbYY4S4Pvm'
 
-		const test1 = generateQueryInsertUser(role, bussArea)
+		const test1 = generateQueryInsertUser(role, bussArea, hashedPassword)
 
 		expect(test1).toBe(`INSERT INTO "USERS" ("USERNAME", "NAME", "EMAIL", "password", "ACTIVE_DIRECTORY", "STATUS", "CREATED_AT") VALUES ('creator_lv2_5611', 'CREATOR LV2 5611', 'creator_lv2_5611@email.test', '$2y$10$9PCJ.5bX0RHt1Zq7gFiswOcigO1kvwXRP5V.xgG3rpSVbYY4S4Pvm', '0', 'ACTV', SYSTIMESTAMP);`)
 
-		const test2 = generateQueryInsertUser(role, bussArea, true)
+		const test2 = generateQueryInsertUser(role, bussArea, hashedPassword, true)
 
 		expect(test2).toBe(`INSERT INTO "USERS" ("ID", "USERNAME", "NAME", "EMAIL", "password", "ACTIVE_DIRECTORY", "STATUS", "CREATED_AT") VALUES ((SELECT NVL(MAX(ID), 0)+1 FROM "USERS"), 'creator_lv2_5611', 'CREATOR LV2 5611', 'creator_lv2_5611@email.test', '$2y$10$9PCJ.5bX0RHt1Zq7gFiswOcigO1kvwXRP5V.xgG3rpSVbYY4S4Pvm', '0', 'ACTV', SYSTIMESTAMP);`)
 	})

@@ -50,11 +50,11 @@ export function generateCompanyCode(bussArea: string): string {
 	return `${bussArea.slice(0, 2)}00`
 }
 
-export function generateQueryInsertUser(roleName: string, bussArea: string, isWithDbId: boolean = false): string {
+export function generateQueryInsertUser(roleName: string, bussArea: string, hashedPassword: string, isWithDbId: boolean = false): string {
 	const userName = generateUserName(roleName, bussArea)
 	const name = userName.replaceAll('_', ' ').toUpperCase()
 
-	return `INSERT INTO "USERS" (${isWithDbId ? '"ID", ' : ''}"USERNAME", "NAME", "EMAIL", "password", "ACTIVE_DIRECTORY", "STATUS", "CREATED_AT") VALUES (${isWithDbId ? `(SELECT NVL(MAX(ID), 0)+1 FROM "USERS"), ` : ''}'${userName}', '${name}', '${userName}@email.test', '$2y$10$9PCJ.5bX0RHt1Zq7gFiswOcigO1kvwXRP5V.xgG3rpSVbYY4S4Pvm', '0', 'ACTV', SYSTIMESTAMP);`
+	return `INSERT INTO "USERS" (${isWithDbId ? '"ID", ' : ''}"USERNAME", "NAME", "EMAIL", "password", "ACTIVE_DIRECTORY", "STATUS", "CREATED_AT") VALUES (${isWithDbId ? `(SELECT NVL(MAX(ID), 0)+1 FROM "USERS"), ` : ''}'${userName}', '${name}', '${userName}@email.test', '${hashedPassword}', '0', 'ACTV', SYSTIMESTAMP);`
 }
 
 export function generateQueryAssignRole(roleName: string, bussArea: string): string {
