@@ -3,6 +3,7 @@ import ContentContainer from "@/components/ContentContainer";
 import {isNotEmpty, useForm} from "@mantine/form";
 import {Button, Checkbox, Divider, Grid, MultiSelect, Text, Textarea, TextInput} from "@mantine/core";
 import {
+  exportStringToSqlFile,
   generateAllQuery,
   MASTER_ROLES
 } from "@/services/userCreatorService";
@@ -39,6 +40,8 @@ export default function UserCreator() {
   const [assignBussArea, setAssignBussArea] = useState<string>('')
   const [assignMulti, setAssignMulti] = useState<string>('')
 
+  const isResultsNotEmpty = !userInsert && !assignRole && !assignBussArea && !assignMulti
+
   function handleOnSubmit(event: React.FormEvent) {
     event.preventDefault()
     form.validate()
@@ -54,6 +57,28 @@ export default function UserCreator() {
     setAssignRole(result.assignRoleQueryList.join(`\n`));
     setAssignBussArea(result.assignBuseAreaQueryList.join(`\n`));
     setAssignMulti(result.assignMultiQueryList.join(`\n`));
+  }
+
+  function handleOnExportSql(): void {
+    let result: string = ''
+
+    result += `-- User Insert\n`
+    result += userInsert
+    result += `\n\n`
+
+    result += `-- Assign Role\n`
+    result += assignRole
+    result += `\n\n`
+
+    result += `-- Assign Buss Area\n`
+    result += assignBussArea
+    result += `\n\n`
+
+    result += `-- Assign Multi Code\n`
+    result += assignMulti
+    result += `\n\n`
+
+    exportStringToSqlFile(result)
   }
 
   return (
@@ -108,6 +133,13 @@ export default function UserCreator() {
           </Grid.Col>
           <Grid.Col>
             <Textarea label="SQL Assign Multi Code" value={assignMulti} readOnly rows={10}/>
+          </Grid.Col>
+          <Grid.Col>
+            <Grid>
+              <Grid.Col span='shrink'>
+                <Button type="submit" onClick={handleOnExportSql} disabled={isResultsNotEmpty} color='yellow.5'>Export SQL</Button>
+              </Grid.Col>
+            </Grid>
           </Grid.Col>
         </Grid>
       </ContentContainer>

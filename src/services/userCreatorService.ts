@@ -109,3 +109,21 @@ export function generateAllQuery(selectedRoles: string[], bussAreaLv2List: strin
 		assignMultiQueryList
 	}
 }
+
+export function exportStringToSqlFile(text: string): Promise<void> {
+	return new Promise((resolve, reject) => {
+		try {
+			const blob = new Blob([text], { type: 'application/sql' });
+			const url = URL.createObjectURL(blob)
+			const a = document.createElement('a')
+
+			a.setAttribute('href', url)
+			a.setAttribute('download', `${Date.now()}.sql`);
+			a.click()
+
+			resolve()
+		} catch (e) {
+			reject(e)
+		}
+	})
+}
