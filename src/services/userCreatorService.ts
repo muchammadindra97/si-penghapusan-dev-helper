@@ -75,3 +75,37 @@ export function generateQueryAssignMultiCompany(roleName: string, bussArea: stri
 
 	return `INSERT INTO "USER_COCODE_ROLE" ("USER_ID", "COMPANY_CODE_ID") VALUES ((SELECT MAX(ID) FROM "USERS" WHERE "USERNAME" = '${userName}'), (SELECT MAX(ID) FROM "M_COMPANY_CODE" WHERE "COMPANY_CODE" = '${companyCode}'));`
 }
+
+export function generateAllQuery(selectedRoles: string[], bussAreaLv2List: string[], bussAreaLv1: string, hashedPassword: string, isWithDbId: boolean) {
+	let userInsertQueryList: string[] = []
+	let assignRoleQueryList: string[] = []
+	let assignBuseAreaQueryList: string[] = []
+	let assignMultiQueryList: string[] = []
+
+	selectedRoles.forEach(roleName => {
+		const role = MASTER_ROLES.get(roleName)
+
+		if (role) {
+			const bussAreaList: string[] = role.level === '2' ? bussAreaLv2List : [bussAreaLv1];
+
+			bussAreaList.forEach(rawBussArea => {
+				const bussArea: string = rawBussArea.trim()
+
+				userInsertQueryList.push(generateQueryInsertUser(role.name, bussArea, hashedPassword, isWithDbId))
+				assignRoleQueryList.push(generateQueryAssignRole(role.name, bussArea))
+				assignBuseAreaQueryList.push(generateQueryAssignBussArea(role.name, bussArea, isWithDbId))
+
+				if (role.level === 'multi') {
+					assignMultiQueryList.push(generateQueryAssignMultiCompany(role.name, bussArea))
+				}
+			});
+		}
+	})
+
+	return {
+		userInsertQueryList,
+		assignRoleQueryList,
+		assignBuseAreaQueryList,
+		assignMultiQueryList
+	}
+}

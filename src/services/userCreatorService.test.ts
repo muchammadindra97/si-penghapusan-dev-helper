@@ -3,7 +3,8 @@ import {
 	generateQueryAssignMultiCompany,
 	generateQueryAssignBussArea,
 	generateQueryAssignRole,
-	generateQueryInsertUser
+	generateQueryInsertUser,
+	generateAllQuery, MASTER_ROLES
 } from "@/services/userCreatorService";
 
 describe('User Creator Service Test', () => {
@@ -44,5 +45,29 @@ describe('User Creator Service Test', () => {
 		const test = generateQueryAssignMultiCompany('creator-spi', '5601')
 
 		expect(test).toBe(`INSERT INTO "USER_COCODE_ROLE" ("USER_ID", "COMPANY_CODE_ID") VALUES ((SELECT MAX(ID) FROM "USERS" WHERE "USERNAME" = 'creator_spi_5601'), (SELECT MAX(ID) FROM "M_COMPANY_CODE" WHERE "COMPANY_CODE" = '5600'));`)
+	})
+
+	test('Generate all query to array', () => {
+		const roleList: string[] = Array.from(MASTER_ROLES.keys())
+		const bussAreaLv2List: string[] = ['5611']
+		const bussAreaLv1List: string = '5601'
+		const hashedPassword = '123'
+		const isWithDbId = true
+
+		const result1 = generateAllQuery(roleList, bussAreaLv2List, bussAreaLv1List, hashedPassword, isWithDbId)
+
+		expect(result1.userInsertQueryList.length).toBe(36)
+		expect(result1.assignRoleQueryList.length).toBe(36)
+		expect(result1.assignBuseAreaQueryList.length).toBe(36)
+		expect(result1.assignMultiQueryList.length).toBe(30)
+
+		bussAreaLv2List.push('5612')
+		bussAreaLv2List.push('5613')
+		const result2 = generateAllQuery(roleList, bussAreaLv2List, bussAreaLv1List, hashedPassword, isWithDbId)
+
+		expect(result2.userInsertQueryList.length).toBe(42)
+		expect(result2.assignRoleQueryList.length).toBe(42)
+		expect(result2.assignBuseAreaQueryList.length).toBe(42)
+		expect(result2.assignMultiQueryList.length).toBe(30)
 	})
 })

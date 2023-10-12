@@ -3,10 +3,7 @@ import ContentContainer from "@/components/ContentContainer";
 import {isNotEmpty, useForm} from "@mantine/form";
 import {Button, Checkbox, Divider, Grid, MultiSelect, Text, Textarea, TextInput} from "@mantine/core";
 import {
-  generateQueryAssignBussArea,
-  generateQueryAssignMultiCompany,
-  generateQueryAssignRole,
-  generateQueryInsertUser,
+  generateAllQuery,
   MASTER_ROLES
 } from "@/services/userCreatorService";
 import React, {useState} from "react";
@@ -48,32 +45,15 @@ export default function UserCreator() {
 
     if (!form.isValid()) return
 
-    let finalUserInsert: string[] = [];
-    let finalAssignRole: string[] = [];
-    let finalAssignBussArea: string[] = [];
-    let finalAssignMulti: string[] = [];
-
     const selectedRoles = form.values.selectedRoles
-    selectedRoles.forEach(roleName => {
-      const role = MASTER_ROLES.get(roleName)
+    const bussAreaLv2List = form.values.bussAreaLv2.split(',')
 
-      if (role) {
-        const bussArea = role.level === '2' ? form.values.bussAreaLv2 : form.values.bussAreaLv1;
+    const result = generateAllQuery(selectedRoles, bussAreaLv2List, form.values.bussAreaLv1, form.values.hashedPassword, form.values.isWithDbId)
 
-        finalUserInsert.push(generateQueryInsertUser(role.name, bussArea, form.values.hashedPassword, form.values.isWithDbId))
-        finalAssignRole.push(generateQueryAssignRole(role.name, bussArea))
-        finalAssignBussArea.push(generateQueryAssignBussArea(role.name, bussArea, form.values.isWithDbId))
-
-        if (role.level === 'multi') {
-          finalAssignMulti.push(generateQueryAssignMultiCompany(role.name, bussArea))
-        }
-      }
-    })
-
-    setUserInsert(finalUserInsert.join(`\n`));
-    setAssignRole(finalAssignRole.join(`\n`));
-    setAssignBussArea(finalAssignBussArea.join(`\n`));
-    setAssignMulti(finalAssignMulti.join(`\n`));
+    setUserInsert(result.userInsertQueryList.join(`\n`));
+    setAssignRole(result.assignRoleQueryList.join(`\n`));
+    setAssignBussArea(result.assignBuseAreaQueryList.join(`\n`));
+    setAssignMulti(result.assignMultiQueryList.join(`\n`));
   }
 
   return (
