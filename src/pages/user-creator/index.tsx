@@ -1,7 +1,7 @@
 import LayoutDefault from "@/layouts/LayoutDefault";
 import ContentContainer from "@/components/ContentContainer";
 import {isNotEmpty, useForm} from "@mantine/form";
-import {Button, Checkbox, Divider, Grid, MultiSelect, Text, Textarea, TextInput} from "@mantine/core";
+import {Button, Checkbox, Divider, Flex, Grid, MultiSelect, Text, Textarea, TextInput} from "@mantine/core";
 import {
   exportStringToSqlFile,
   generateAllQuery,
@@ -135,11 +135,11 @@ export default function UserCreator() {
             <Textarea label="SQL Assign Multi Code" value={assignMulti} readOnly rows={10}/>
           </Grid.Col>
           <Grid.Col>
-            <Grid>
-              <Grid.Col span='shrink'>
-                <Button type="submit" onClick={handleOnExportSql} disabled={isResultsNotEmpty} color='yellow.5'>Export SQL</Button>
-              </Grid.Col>
-            </Grid>
+            <Flex
+              gap="md"
+            >
+              <Button type="submit" onClick={handleOnExportSql} disabled={isResultsNotEmpty} color='yellow.5'>Export SQL</Button>
+            </Flex>
           </Grid.Col>
         </Grid>
       </ContentContainer>
