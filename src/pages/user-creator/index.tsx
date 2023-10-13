@@ -4,10 +4,11 @@ import {isNotEmpty, useForm} from "@mantine/form";
 import {Button, Checkbox, Divider, Flex, Grid, MultiSelect, Text, Textarea, TextInput} from "@mantine/core";
 import {
   exportStringToSqlFile,
+  exportUsernamesToCsvFile,
   generateAllQuery,
-  MASTER_ROLES
+  MASTER_ROLES, UserNameForList
 } from "@/services/userCreatorService";
-import React, {useState} from "react";
+import React, {useRef, useState} from "react";
 
 type UserCreatorForm = {
   bussAreaLv1: string,
@@ -39,6 +40,7 @@ export default function UserCreator() {
   const [assignRole, setAssignRole] = useState<string>('')
   const [assignBussArea, setAssignBussArea] = useState<string>('')
   const [assignMulti, setAssignMulti] = useState<string>('')
+  const userNamesList = useRef<UserNameForList[]>([])
 
   const isResultsNotEmpty = !userInsert && !assignRole && !assignBussArea && !assignMulti
 
@@ -57,6 +59,7 @@ export default function UserCreator() {
     setAssignRole(result.assignRoleQueryList.join(`\n`));
     setAssignBussArea(result.assignBuseAreaQueryList.join(`\n`));
     setAssignMulti(result.assignMultiQueryList.join(`\n`));
+    userNamesList.current = result.userNameList
   }
 
   function handleOnExportSql(): void {
@@ -79,6 +82,10 @@ export default function UserCreator() {
     result += `\n\n`
 
     exportStringToSqlFile(result)
+  }
+
+  function handleOnExportUsernames(): void {
+    exportUsernamesToCsvFile(userNamesList.current)
   }
 
   return (
@@ -139,6 +146,7 @@ export default function UserCreator() {
               gap="md"
             >
               <Button type="submit" onClick={handleOnExportSql} disabled={isResultsNotEmpty} color='yellow.5'>Export SQL</Button>
+              <Button type="submit" onClick={handleOnExportUsernames} disabled={isResultsNotEmpty} color='green.8'>Export Usernames CSV</Button>
             </Flex>
           </Grid.Col>
         </Grid>

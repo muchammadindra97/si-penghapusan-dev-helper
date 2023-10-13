@@ -76,11 +76,21 @@ export function generateQueryAssignMultiCompany(roleName: string, bussArea: stri
 	return `INSERT INTO "USER_COCODE_ROLE" ("USER_ID", "COMPANY_CODE_ID") VALUES ((SELECT MAX(ID) FROM "USERS" WHERE "USERNAME" = '${userName}'), (SELECT MAX(ID) FROM "M_COMPANY_CODE" WHERE "COMPANY_CODE" = '${companyCode}'));`
 }
 
+export type UserNameForList = {
+	role: string,
+	username: string,
+	name: string,
+	company: string,
+	area: string
+}
+
 export function generateAllQuery(selectedRoles: string[], bussAreaLv2List: string[], bussAreaLv1: string, hashedPassword: string, isWithDbId: boolean) {
-	let userInsertQueryList: string[] = []
-	let assignRoleQueryList: string[] = []
-	let assignBuseAreaQueryList: string[] = []
-	let assignMultiQueryList: string[] = []
+	const userInsertQueryList: string[] = []
+	const assignRoleQueryList: string[] = []
+	const assignBuseAreaQueryList: string[] = []
+	const assignMultiQueryList: string[] = []
+
+	const userNameList: UserNameForList[] = []
 
 	selectedRoles.forEach(roleName => {
 		const role = MASTER_ROLES.get(roleName)
@@ -90,6 +100,14 @@ export function generateAllQuery(selectedRoles: string[], bussAreaLv2List: strin
 
 			bussAreaList.forEach(rawBussArea => {
 				const bussArea: string = rawBussArea.trim()
+
+				userNameList.push({
+					role: role.name,
+					username: generateUserName(role.name, bussArea),
+					name: generateUserName(role.name, bussArea).replaceAll('_', ' ').toUpperCase(),
+					company: generateCompanyCode(bussArea),
+					area: bussArea
+				})
 
 				userInsertQueryList.push(generateQueryInsertUser(role.name, bussArea, hashedPassword, isWithDbId))
 				assignRoleQueryList.push(generateQueryAssignRole(role.name, bussArea))
@@ -106,7 +124,8 @@ export function generateAllQuery(selectedRoles: string[], bussAreaLv2List: strin
 		userInsertQueryList,
 		assignRoleQueryList,
 		assignBuseAreaQueryList,
-		assignMultiQueryList
+		assignMultiQueryList,
+		userNameList
 	}
 }
 
@@ -119,6 +138,32 @@ export function exportStringToSqlFile(text: string): Promise<void> {
 
 			a.setAttribute('href', url)
 			a.setAttribute('download', `${Date.now()}.sql`);
+			a.click()
+
+			resolve()
+		} catch (e) {
+			reject(e)
+		}
+	})
+}
+
+export function exportUsernamesToCsvFile(userNameList: UserNameForList[]): Promise<void> {
+	return new Promise((resolve, reject) => {
+		try {
+			const usernameString: string[] = []
+
+			userNameList.forEach(userNameForList => {
+				usernameString.push(`${userNameForList.role};${userNameForList.username};${userNameForList.name};${userNameForList.company};${userNameForList.area}`)
+			})
+
+			const result = `role;username;name;company;area\n` + usernameString.join('\n')
+
+			const blob = new Blob([result], { type: 'text/csv' });
+			const url = URL.createObjectURL(blob)
+			const a = document.createElement('a')
+
+			a.setAttribute('href', url)
+			a.setAttribute('download', `${Date.now()}.csv`);
 			a.click()
 
 			resolve()
