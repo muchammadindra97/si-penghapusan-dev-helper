@@ -4,7 +4,7 @@ import {
 	generateQueryAssignBussArea,
 	generateQueryAssignRole,
 	generateQueryInsertUser,
-	generateAllQuery, MASTER_ROLES
+	generateAllQuery, MASTER_ROLES, generateAllQueryByBussAreaList
 } from "@/services/userCreatorService";
 
 describe('User Creator Service Test', () => {
@@ -69,5 +69,17 @@ describe('User Creator Service Test', () => {
 		expect(result2.assignRoleQueryList.length).toBe(42)
 		expect(result2.assignBuseAreaQueryList.length).toBe(42)
 		expect(result2.assignMultiQueryList.length).toBe(30)
+	})
+
+	test('Generate all query by business area list', () => {
+		const bussAreaList: string[] = ['5611', '5612', '7812', '7814', '6515']
+
+		const result = generateAllQueryByBussAreaList(bussAreaList, '123', true)
+
+		expect(result.userInsertQueryList.length).toBe(114)
+		expect(result.assignRoleQueryList.length).toBe(114)
+		expect(result.assignBuseAreaQueryList.length).toBe(114)
+		expect(result.assignMultiQueryList.length).toBe(90)
+		expect(result.userNameList.length).toBe(114)
 	})
 })

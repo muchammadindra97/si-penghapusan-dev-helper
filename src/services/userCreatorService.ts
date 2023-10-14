@@ -172,3 +172,70 @@ export function exportUsernamesToCsvFile(userNameList: UserNameForList[]): Promi
 		}
 	})
 }
+
+export function generateAllQueryByBussAreaList(bussAreaList: string[], hashedPassword: string, isWithDbId = false) {
+	const userInsertQueryList: string[] = []
+	const assignRoleQueryList: string[] = []
+	const assignBuseAreaQueryList: string[] = []
+	const assignMultiQueryList: string[] = []
+	const userNameList: UserNameForList[] = []
+	const bussAreaGroup = new Map<string, string[]>()
+
+	const processBussArea = (role: MASTER_ROLE, bussArea: string) => {
+		userNameList.push({
+			role: role.name,
+			username: generateUserName(role.name, bussArea),
+			name: generateUserName(role.name, bussArea).replaceAll('_', ' ').toUpperCase(),
+			company: generateCompanyCode(bussArea),
+			area: bussArea
+		})
+
+		userInsertQueryList.push(generateQueryInsertUser(role.name, bussArea, hashedPassword, isWithDbId))
+		assignRoleQueryList.push(generateQueryAssignRole(role.name, bussArea))
+		assignBuseAreaQueryList.push(generateQueryAssignBussArea(role.name, bussArea, isWithDbId))
+
+		if (role.level === 'multi') {
+			assignMultiQueryList.push(generateQueryAssignMultiCompany(role.name, bussArea))
+		}
+	}
+
+	bussAreaList.forEach(bussArea => {
+		const bussAreaLv1 = bussArea.trim().slice(0, 2) + '01'
+		const bussAreaList = bussAreaGroup.get(bussAreaLv1)
+
+		if (bussAreaList) {
+			bussAreaList.push(bussArea.trim())
+			bussAreaGroup.set(bussAreaLv1, bussAreaList)
+		} else {
+			bussAreaGroup.set(bussAreaLv1, [bussArea.trim()])
+		}
+	})
+
+	const roleLv2: MASTER_ROLE[] = []
+	MASTER_ROLES.forEach(role => {
+		if (role.level === '2') {
+			roleLv2.push(role)
+		}
+	})
+
+	bussAreaGroup.forEach((groupedBussAreaList, bussAreaLv1) => {
+		groupedBussAreaList.forEach(bussAreaCurrent => {
+			roleLv2.forEach(role => {
+				processBussArea(role, bussAreaCurrent)
+			})
+		})
+		MASTER_ROLES.forEach(role => {
+			if (role.level !== '2') {
+				processBussArea(role, bussAreaLv1)
+			}
+		})
+	})
+
+	return {
+		userInsertQueryList,
+		assignRoleQueryList,
+		assignBuseAreaQueryList,
+		assignMultiQueryList,
+		userNameList
+	}
+}
